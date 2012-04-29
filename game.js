@@ -13,48 +13,71 @@ var directionY = speed;
 var behindLine = [{'x': playerX, 'y': playerY}];
 var marginLine = [{'x': canvas_margin, 'y': canvas_margin}];
 var rotation = 0.25;
+var loser = new Image();
+loser.src = "img/loser.png";
+var winner = new Image();
+winner.src = "img/winner.png";
+context.globalAlpha =1;
 
 window.addEventListener("keydown",doKeyDown,true);
 
-for(var i = canvas_margin+5;i<=height-canvas_margin;i+=5)
+for(var i = canvas_margin+5;i<height-canvas_margin;i+=5)
 {
 	marginLine.push({'x':canvas_margin,'y':i});
 }
-for(var i = canvas_margin;i<=width-canvas_margin;i+=5)
+for(var i = canvas_margin;i<width-canvas_margin;i+=5)
 {
 	marginLine.push({'x':i,'y':height-canvas_margin});
 }
-for(var i = height-canvas_margin;i >= canvas_margin;i-=5)
+for(var i = height-canvas_margin;i > canvas_margin;i-=5)
 {
 	marginLine.push({'x':width-canvas_margin,'y':i});
 }
-for(var i = width-canvas_margin;i >= canvas_margin;i-=5)
+for(var i = width-canvas_margin;i >=canvas_margin;i-=5)
 {
 	marginLine.push({'x':i,'y':canvas_margin});
 }
 var initialArea = arie();
 
 function mainLoop(){
-if(checkDead()) {
-	console.log("you're fucked up");
-	}
-else {
-context.fillStyle = "black";
-context.fillRect(0,0,width,height);
-drawLine(marginLine,"yellow");
-drawLine(behindLine,"pink");
-context.fillStyle = "red";
-context.beginPath();
-context.arc(playerX, playerY, 10, rotation*Math.PI, (rotation+1)*Math.PI, true);
-context.closePath();
-context.fill();
-context.beginPath();
-context.arc(playerX, playerY, 10, (rotation+0.5)*Math.PI, (rotation+1.5)*Math.PI,false);
-context.closePath();
-context.fill();
-moveEnemy();
-$(".sidebar").text(score());
-}
+	if(checkDead()) {
+		window.addEventListener("keydown",doKeyDown,false);
+		context.drawImage(loser,0,0,640,480);
+		}
+	else if(score()>=85){
+			window.addEventListener("keydown",doKeyDown,false);
+			context.drawImage(winner,0,0,640,480);
+		}
+		else
+		{
+			context.fillStyle = "black";
+			context.fillRect(0,0,width,height);
+			drawLine(marginLine,"yellow");
+			drawLine(behindLine,"pink");
+
+			context.fillStyle = "red";
+			context.beginPath();
+			context.arc(playerX, playerY, 10, rotation*Math.PI, (rotation+1)*Math.PI, true);
+			context.closePath();
+			context.fill();
+			context.beginPath();
+			context.arc(playerX, playerY, 10, (rotation+0.5)*Math.PI, (rotation+1.5)*Math.PI,false);
+			context.closePath();
+			context.fill();
+			context.fillStyle = "black";
+			context.beginPath();
+			if(rotation<1)
+				context.arc(playerX+4, playerY-2, 3, 0, 2*Math.PI, true);
+			else
+				if(rotation==1.75)
+					context.arc(playerX-4, playerY-2, 3, 0, 2*Math.PI, true);
+				else
+					context.arc(playerX+4, playerY+2, 3, 0, 2*Math.PI, true);
+			context.closePath();
+			context.fill();
+			moveEnemy();
+			$(".sidebar").text(score());
+		}
 }
 
 function moveEnemy() {
@@ -114,7 +137,7 @@ function doKeyDown(event) {
 		behindLine = addLine();
 	else
 	{
-	   if ( behindLine.length > 1){
+	   if ( behindLine.length > 1 && (behindLine[0].x !=playerX || behindLine[0].y!=playerY)){
 			updateMarginLine();
 		}
 		behindLine = [{'x': playerX, 'y': playerY}];
@@ -248,7 +271,7 @@ function checkDead() {
 
 function score(){
   var partiala = arie();
-  var procent = partiala/initialArea * 100;
+  var procent = 100-partiala/initialArea * 100;
   procent = procent*100;
   Math.ceil(procent);
   return Math.ceil(procent)/100;
