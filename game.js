@@ -79,6 +79,7 @@ function mainLoop(){
 			directionX = 2*speed;
 			directionY = 2*speed;
 			timelimit +=level*45;
+			speedX = speedY = 0;
 			background.src="img/level2.jpg";
 			enemyX = 320
 			enemyY = 240;
