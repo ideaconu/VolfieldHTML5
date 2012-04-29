@@ -19,17 +19,23 @@ var startTime=d.valueOf();
 var speedX = 0;
 var speedY = 0;
 var loser = new Image();
+var text= 0;
+var timelimit = 45;
 loser.src = "img/loser.png";
 var winner = new Image();
 winner.src = "img/winner.png";
 var enemy = new Image();
+var level = 1;
 enemy.src = "img/ghost.png";
 context.globalAlpha =1;
 var background = new Image();
 background.src = "img/minions.jpg";
 
 window.addEventListener("keydown",doKeyDown,true);
-
+init();
+var initialArea = arie();
+function init(){
+marginLine = [{'x': canvas_margin, 'y': canvas_margin}];
 for(var i = canvas_margin+5;i<height-canvas_margin;i+=5)
 {
 	marginLine.push({'x':canvas_margin,'y':i});
@@ -46,20 +52,40 @@ for(var i = width-canvas_margin;i >=canvas_margin;i-=5)
 {
 	marginLine.push({'x':i,'y':canvas_margin});
 }
-var initialArea = arie();
+}
 
 function mainLoop(){
 	var aux_time=(new Date).getTime();
-	if(checkDead() || (aux_time-startTime) > 30000 || check== 1) {
+	if(checkDead() || text > timelimit || check== 1) {
 		window.addEventListener("keydown",doKeyDown,false);
 		context.drawImage(loser,0,0,640,480);
-		text = 30;
+		text = timelimit;
 		check = 1;
 		}
-	else if(score()>=85 || check ==2){
+	else
+		if(level>2) {
 			window.addEventListener("keydown",doKeyDown,false);
 			context.drawImage(winner,0,0,640,480);
-			check = 2;
+			check = 3;
+		}
+		else
+		if(score()>=85 || check ==2){
+					level++;
+		if(level<3)
+		{
+			init();
+			check =3;
+			startTime = aux_time;
+			directionX = 2*speed;
+			directionY = 2*speed;
+			timelimit +=level*45;
+			background.src="img/level2.jpg";
+			enemyX = 320
+			enemyY = 240;
+			playerX=playerY = canvas_margin;
+			rotation = 0.25;
+			behindLine = [{'x': playerX, 'y': playerY}];
+		}
 		}
 		else
 		{
