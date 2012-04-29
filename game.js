@@ -13,11 +13,20 @@ var directionY = speed;
 var behindLine = [{'x': playerX, 'y': playerY}];
 var marginLine = [{'x': canvas_margin, 'y': canvas_margin}];
 var rotation = 0.25;
+var check=0;
+var d=new Date();
+var startTime=d.valueOf();
+var speedX = 0;
+var speedY = 0;
 var loser = new Image();
 loser.src = "img/loser.png";
 var winner = new Image();
 winner.src = "img/winner.png";
+var enemy = new Image();
+enemy.src = "img/ghost.png";
 context.globalAlpha =1;
+var background = new Image();
+background.src = "img/minions.jpg";
 
 window.addEventListener("keydown",doKeyDown,true);
 
@@ -40,21 +49,26 @@ for(var i = width-canvas_margin;i >=canvas_margin;i-=5)
 var initialArea = arie();
 
 function mainLoop(){
-	if(checkDead()) {
+	var aux_time=(new Date).getTime();
+	if(checkDead() || (aux_time-startTime) > 30000 || check== 1) {
 		window.addEventListener("keydown",doKeyDown,false);
 		context.drawImage(loser,0,0,640,480);
+		text = 30;
+		check = 1;
 		}
-	else if(score()>=85){
+	else if(score()>=85 || check ==2){
 			window.addEventListener("keydown",doKeyDown,false);
 			context.drawImage(winner,0,0,640,480);
+			check = 2;
 		}
 		else
 		{
+			text=(aux_time-startTime)/1000;
 			context.fillStyle = "black";
 			context.fillRect(0,0,width,height);
-			drawLine(marginLine,"yellow");
+			context.drawImage(background,canvas_margin,canvas_margin,width-2*canvas_margin,height -2*canvas_margin);
+			drawBg(marginLine,"yellow","white");
 			drawLine(behindLine,"pink");
-
 			context.fillStyle = "red";
 			context.beginPath();
 			context.arc(playerX, playerY, 10, rotation*Math.PI, (rotation+1)*Math.PI, true);
@@ -76,22 +90,24 @@ function mainLoop(){
 			context.closePath();
 			context.fill();
 			moveEnemy();
-			$(".sidebar").text(score());
+			movePlayer();
 		}
+	$(".score").text("    "+score()+"%");
+	$(".TIME").text(text);
 }
 
 function moveEnemy() {
 	var ok=0;
 	enemyX +=directionX;
 	enemyY +=directionY;
-	for(var i=0;i<20;i+=5)
-	if((!inside(enemyX+i,enemyY) && !inside(enemyX+i+5,enemyY)) || (!inside(enemyX+i,enemyY+20) && !inside(enemyX+i+5,enemyY+20))) {
+	for(var i=-5;i<=20;i+=5)
+	if((!inside(enemyX+i,enemyY-5) && !inside(enemyX+i+5,enemyY-5)) || (!inside(enemyX+i,enemyY+25) && !inside(enemyX+i+5,enemyY+25))) {
 		directionY *=-1;
 		ok =1;
 		break;
 	}
-	for(var i=0;i<20;i+=5)
-	if((!inside(enemyX,enemyY+i) && !inside(enemyX,enemyY+i+5)) || (!inside(enemyX+20,enemyY+i+5) && !inside(enemyX+20,enemyY+i))) {
+	for(var i=-5;i<=20;i+=5)
+	if((!inside(enemyX-5,enemyY+i) && !inside(enemyX-5,enemyY+i+5)) || (!inside(enemyX+25,enemyY+i+5) && !inside(enemyX+25,enemyY+i))) {
 		directionX *=-1;
 		ok =1;
 		break;
@@ -101,37 +117,17 @@ function moveEnemy() {
 		enemyX +=directionX;
 		enemyY +=directionY;
 	}
-
-	context.fillStyle = "white";
-	context.fillRect(enemyX,enemyY,20,20);
+	context.drawImage(enemy,enemyX,enemyY,20,20);
 }
+function movePlayer(){
+	playerX +=speedX;
+	playerY +=speedY;
 
-function doKeyDown(event) {
-	switch (event.keyCode) {
-			case 38: /*Up arrow*/
-				if(inside(playerX,playerY - speed)) {
-					playerY -=speed;
-					rotation=1.25;
-				}
-				break;
-			case 40: /*Down arrow*/
-				if(inside(playerX,playerY + speed)) {
-					playerY +=speed;
-					rotation = 0.25;
-				}
-				break;
-			case 37: /*Left arrow*/
-				if(inside(playerX - speed,playerY)) {
-					playerX -=speed;
-					rotation = 0.75;
-				}
-				break;
-			case 39: /*Right arrow*/
-				if(inside(playerX + speed,playerY)) {
-					playerX +=speed;
-					rotation = 1.75;					
-				}
-				break;
+	if(!onMargin(playerX,playerY) && !inside(playerX,playerY))
+	{
+		playerX -=speedX;
+		playerY -=speedY;
+		speedX=speedY=0;
 	}
 	if(!onMargin(playerX,playerY))
 		behindLine = addLine();
@@ -141,6 +137,31 @@ function doKeyDown(event) {
 			updateMarginLine();
 		}
 		behindLine = [{'x': playerX, 'y': playerY}];
+	}
+}
+
+function doKeyDown(event) {
+	switch (event.keyCode) {
+			case 38: /*Up arrow*/
+					speedY = -speed;
+					speedX=0;
+					rotation=1.25;
+				break;
+			case 40: /*Down arrow*/
+					speedY = speed;
+					speedX = 0;
+					rotation = 0.25;
+				break;
+			case 37: /*Left arrow*/
+					speedX = -speed;
+					speedY = 0;
+					rotation = 0.75;
+				break;
+			case 39: /*Right arrow*/
+					speedX = speed;
+					speedY=0;
+					rotation = 1.75;					
+				break;
 	}
 }
 
@@ -158,7 +179,6 @@ function determine_direction( poz)
 			return i;
 	}
   var total= marginLine.length; //nr total de liniute
-
 }
 
 function redesignMargin(start, stop){
@@ -167,12 +187,20 @@ function redesignMargin(start, stop){
 			var auxLeft = marginLine.slice(0,start);
 			var auxRight = marginLine.slice(stop);
 			marginLine = auxLeft.concat(behindLine.concat( auxRight));
-			if(!inside(enemyX,enemyY))
-			{
-				auxLeft = auxMarginLine.slice(start,stop);
-				behindLine.push({'x':playerX,'y':playerY});
-				marginLine = auxLeft.concat(behindLine.reverse());
-			}
+			for(var i=0;i<20;i+=5)
+				if((!inside(enemyX+i,enemyY) && !inside(enemyX+i+5,enemyY)) || (!inside(enemyX+i,enemyY+20) && !inside(enemyX+i+5,enemyY+20))) {
+					auxLeft = auxMarginLine.slice(start,stop);
+					behindLine.push({'x':playerX,'y':playerY});
+					marginLine = auxLeft.concat(behindLine.reverse());
+					break;
+				}
+			for(var i=0;i<20;i+=5)
+				if((!inside(enemyX,enemyY+i) && !inside(enemyX,enemyY+i+5)) || (!inside(enemyX+20,enemyY+i+5) && !inside(enemyX+20,enemyY+i))) {
+					auxLeft = auxMarginLine.slice(start,stop);
+					behindLine.push({'x':playerX,'y':playerY});
+					marginLine = auxLeft.concat(behindLine.reverse());
+					break;
+				}
 		}
 		else{
 			var auxMarginLine = marginLine;
@@ -180,11 +208,19 @@ function redesignMargin(start, stop){
 			var auxLeft = marginLine.slice(0,stop);
 			var auxRight = marginLine.slice(start);
 			marginLine = auxLeft.concat((behindLine.reverse()).concat(auxRight))
-			if(!inside(enemyX,enemyY))
-			{
-				auxLeft = auxMarginLine.slice(stop,start);
-				marginLine = auxLeft.concat(behindLine.reverse());
-			}
+
+			for(var i=0;i<20;i+=5)
+				if((!inside(enemyX+i,enemyY) && !inside(enemyX+i+5,enemyY)) || (!inside(enemyX+i,enemyY+20) && !inside(enemyX+i+5,enemyY+20))) {
+					auxLeft = auxMarginLine.slice(stop,start);
+					marginLine = auxLeft.concat(behindLine.reverse());
+					break;
+				}
+			for(var i=0;i<20;i+=5)
+				if((!inside(enemyX,enemyY+i) && !inside(enemyX,enemyY+i+5)) || (!inside(enemyX+20,enemyY+i+5) && !inside(enemyX+20,enemyY+i))) {
+					auxLeft = auxMarginLine.slice(stop,start);
+					marginLine = auxLeft.concat(behindLine.reverse());
+					break;
+				}
 		}
 }
 
@@ -228,9 +264,22 @@ function drawLine(line,color) {
 		context.lineTo(line[i].x,line[i].y);
 		context.closePath();
 		context.stroke();
+		context.fill();
 	}
 }
-
+function drawBg(line,color,colorbg) {
+	context.fillStyle = colorbg;
+	context.strokeStyle = color;
+	context.beginPath();
+	context.moveTo(line[0].x,line[0].y);
+	for(var i = 1; i < line.length ; i++ )
+	{
+		context.lineTo(line[i].x,line[i].y);
+	}
+	context.closePath();
+	context.stroke();
+	context.fill();
+}
 function contain(pozX,pozY) {
 	for(var i = 0;i<marginLine.length;i++)
 	{
