@@ -13,7 +13,7 @@ var directionY = speed;
 var behindLine = [{'x': playerX, 'y': playerY}];
 var marginLine = [{'x': canvas_margin, 'y': canvas_margin}];
 var rotation = 0.25;
-var initialArea = arie();
+
 window.addEventListener("keydown",doKeyDown,true);
 
 for(var i = canvas_margin+5;i<=height-canvas_margin;i+=5)
@@ -32,6 +32,7 @@ for(var i = width-canvas_margin;i >= canvas_margin;i-=5)
 {
 	marginLine.push({'x':i,'y':canvas_margin});
 }
+var initialArea = arie();
 
 function mainLoop(){
 if(checkDead()) {
@@ -52,6 +53,7 @@ context.arc(playerX, playerY, 10, (rotation+0.5)*Math.PI, (rotation+1.5)*Math.PI
 context.closePath();
 context.fill();
 moveEnemy();
+$(".sidebar").text(score());
 }
 }
 
@@ -138,15 +140,28 @@ function determine_direction( poz)
 
 function redesignMargin(start, stop){
 		if(stop>start){
+			var auxMarginLine = marginLine;
 			var auxLeft = marginLine.slice(0,start);
 			var auxRight = marginLine.slice(stop);
 			marginLine = auxLeft.concat(behindLine.concat( auxRight));
+			if(!inside(enemyX,enemyY))
+			{
+				auxLeft = auxMarginLine.slice(start,stop);
+				behindLine.push({'x':playerX,'y':playerY});
+				marginLine = auxLeft.concat(behindLine.reverse());
+			}
 		}
 		else{
+			var auxMarginLine = marginLine;
 			behindLine.push({'x':playerX,'y':playerY});
 			var auxLeft = marginLine.slice(0,stop);
 			var auxRight = marginLine.slice(start);
 			marginLine = auxLeft.concat((behindLine.reverse()).concat(auxRight))
+			if(!inside(enemyX,enemyY))
+			{
+				auxLeft = auxMarginLine.slice(stop,start);
+				marginLine = auxLeft.concat(behindLine.reverse());
+			}
 		}
 }
 
@@ -221,7 +236,7 @@ function insidePoly(pozX,pozY)
 	return c==1;
 }
 
-function checkDead() {s
+function checkDead() {
 	for(var i=0;i<behindLine.length;i++)
 		for(var j=0;j<=20;j++)
 		{
@@ -231,6 +246,13 @@ function checkDead() {s
 	return false;
 }
 
+function score(){
+  var partiala = arie();
+  var procent = partiala/initialArea * 100;
+  procent = procent*100;
+  Math.ceil(procent);
+  return Math.ceil(procent)/100;
+}
 function inside(pozX,pozY) {
 	var pozEnd = contain(pozX,pozY);
 	var pozBegin = contain(playerX,playerY);

@@ -13,7 +13,7 @@ var directionY = speed;
 var behindLine = [{'x': playerX, 'y': playerY}];
 var marginLine = [{'x': canvas_margin, 'y': canvas_margin}];
 var rotation = 0.25;
-var initialArea = arie();
+
 window.addEventListener("keydown",doKeyDown,true);
 
 for(var i = canvas_margin+5;i<=height-canvas_margin;i+=5)
@@ -32,6 +32,7 @@ for(var i = width-canvas_margin;i >= canvas_margin;i-=5)
 {
 	marginLine.push({'x':i,'y':canvas_margin});
 }
+var initialArea = arie();
 
 function mainLoop(){
 if(checkDead()) {
@@ -52,6 +53,7 @@ context.arc(playerX, playerY, 10, (rotation+0.5)*Math.PI, (rotation+1.5)*Math.PI
 context.closePath();
 context.fill();
 moveEnemy();
+$(".sidebar").text(score());
 }
 }
 
@@ -242,6 +244,14 @@ function checkDead() {
 				return true;
 		}
 	return false;
+}
+
+function score(){
+  var partiala = arie();
+  var procent = partiala/initialArea * 100;
+  procent = procent*100;
+  Math.ceil(procent);
+  return Math.ceil(procent)/100;
 }
 
 function inside(pozX,pozY) {
