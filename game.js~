@@ -221,7 +221,7 @@ function insidePoly(pozX,pozY)
 	return c==1;
 }
 
-function checkDead() {
+function checkDead() {s
 	for(var i=0;i<behindLine.length;i++)
 		for(var j=0;j<=20;j++)
 		{
