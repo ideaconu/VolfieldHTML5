@@ -138,15 +138,28 @@ function determine_direction( poz)
 
 function redesignMargin(start, stop){
 		if(stop>start){
+			var auxMarginLine = marginLine;
 			var auxLeft = marginLine.slice(0,start);
 			var auxRight = marginLine.slice(stop);
 			marginLine = auxLeft.concat(behindLine.concat( auxRight));
+			if(!inside(enemyX,enemyY))
+			{
+				auxLeft = auxMarginLine.slice(start,stop);
+				behindLine.push({'x':playerX,'y':playerY});
+				marginLine = auxLeft.concat(behindLine.reverse());
+			}
 		}
 		else{
+			var auxMarginLine = marginLine;
 			behindLine.push({'x':playerX,'y':playerY});
 			var auxLeft = marginLine.slice(0,stop);
 			var auxRight = marginLine.slice(start);
 			marginLine = auxLeft.concat((behindLine.reverse()).concat(auxRight))
+			if(!inside(enemyX,enemyY))
+			{
+				auxLeft = auxMarginLine.slice(stop,start);
+				marginLine = auxLeft.concat(behindLine.reverse());
+			}
 		}
 }
 
